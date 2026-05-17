@@ -1,0 +1,14 @@
+# Fichiers Terraform
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Dossier locaux
+.terraform/
+
+# variables secrètes/spécifiques
+*.tfvars
+*.tfvars.json
+
+# log d'incident
+crash.log
