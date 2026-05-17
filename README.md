@@ -1,6 +1,6 @@
 # InfoLine
 
-Architecture du VPC 
+```Architecture du VPC 
 
                  INTERNET
                      │
@@ -16,3 +16,4 @@ Architecture du VPC
         │                         │
    SG DEV                    SG PROD
    SSH + HTTP          SSH + HTTP + HTTPS
+```
