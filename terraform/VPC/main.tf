@@ -19,33 +19,91 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-# 	Sous-réseau DEV
-resource "aws_subnet" "dev" {
+------------------------------------------------------------------------------------------------------------
+# 	Sous-réseau Public
+resource "aws_subnet" "loadbalancer_a" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.cidr_subnet_dev
+  cidr_block              = var.cidr_subnet_loadbalancer-a
   availability_zone       = "${var.aws_region}a"
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = "subnet-dev"
-    Environment = "Development"
+    Name        = "subnet-loadbalancer_a"
+    Environment = "Production"
+    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
+    "kubernetes.io/role/elb"                      = "1"
   }
 }
 
-#	Sous-réseau PROD
-resource "aws_subnet" "prod" {
+resource "aws_subnet" "loadbalancer_b" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.cidr_subnet_prod
-  availability_zone       = "${var.aws_region}a" # Mise en place possible d'une haute disponibilité en remplacant la lettre a par b apres la variable 
+  cidr_block              = var.cidr_subnet_loadbalancer-b
+  availability_zone       = "${var.aws_region}b"
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = "subnet-prod"
+    Name        = "subnet-loadbalancer_b"
     Environment = "Production"
+    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
+    "kubernetes.io/role/elb"                      = "1"
+  }
+}
+---------------------------------------------------------------------------------------------------------------
+#	Sous-réseau privée
+resource "aws_subnet" "apps_a" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.cidr_subnet_apps-a
+  availability_zone       = "${var.aws_region}a" 
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name        = "subnet-apps_a"
+    Environment = "Production"
+    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
+    "kubernetes.io/role/internal-elb"             = "1"
   }
 }
 
-# 	Table de routage publique
+resource "aws_subnet" "apps_b" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.cidr_subnet_apps_b
+  availability_zone       = "${var.aws_region}b" 
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name        = "subnet-apps_b"
+    Environment = "Production"
+    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
+    "kubernetes.io/role/internal-elb"             = "1"
+  }
+}
+----------------------------------------------------------------------------------------------------------------
+
+#   NAT GATEWAY
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  tags = {
+    Name    = "nat-eip"
+  }
+
+  depends_on = [aws_internet_gateway.igw]
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.loadbalancer_a.id
+
+  tags = {
+    Name    = "main-nat"
+  }
+
+  depends_on = [aws_internet_gateway.igw]
+}
+
+-----------------------------------------------------------------------------------------------------------------
+
+# 	Table de routage 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -60,57 +118,47 @@ resource "aws_route_table" "public" {
 }
 
 # 	Associations des Tables de Routage
-resource "aws_route_table_association" "dev" {
-  subnet_id      = aws_subnet.dev.id
+resource "aws_route_table_association" "loadbalancer_a" {
+  subnet_id      = aws_subnet.loadbalancer_a.id
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "prod" {
-  subnet_id      = aws_subnet.prod.id
+resource "aws_route_table_association" "loadbalancer_b" {
+  subnet_id      = aws_subnet.loadbalancer_b.id
   route_table_id = aws_route_table.public.id
 }
 
-# 	Groupes de Sécurité (Security Groups)
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
 
-# SG Dev : SSH et http
-resource "aws_security_group" "sg_dev" {
-  name        = "sg_development"
-  description = "group de securite Dev"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTP pour les tests"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
   }
 
   tags = {
-    Name        = "sg-dev"
-    Environment = "Development"
+    Name    = "rt-private"
   }
 }
 
-# SG Prod : HTTP/HTTPS et SSH
+resource "aws_route_table_association" "apps_a" {   
+  subnet_id      = aws_subnet.apps_a.id             
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "apps_b" {   
+  subnet_id      = aws_subnet.apps_b.id             
+  route_table_id = aws_route_table.private.id
+}
+
+------------------------------------------------------------------------------------------------------------------------
+
+# 	Groupes de Sécurité (Security Groups)
+
+    # SG Prod : HTTP/HTTPS et SSH
 resource "aws_security_group" "sg_prod" {
   name        = "sg_production"
-  description = "group de securite pour la Prod"
+  description = "group de securite production"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -118,12 +166,12 @@ resource "aws_security_group" "sg_prod" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = [var.ssh_allowed_cidr]
   }
 
   ingress {
     description = "HTTPS"
-    from_port   = 44
+    from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
@@ -137,6 +185,15 @@ resource "aws_security_group" "sg_prod" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+    # Port 8080 API Spring Boot lb
+  ingress {
+    description = "API Spring Boot"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]  
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -146,6 +203,43 @@ resource "aws_security_group" "sg_prod" {
 
   tags = {
     Name        = "sg-prod"
+    Environment = "Production"
+  }
+}
+
+# Groupes de Sécurité des nodes EKS 
+resource "aws_security_group" "sg_eks_nodes" {
+  name        = "sg_eks_nodes"
+  description = "Groupe de securite pour les nodes EKS"
+  vpc_id      = aws_vpc.main.id
+
+  # Communication entre nodes du cluster
+  ingress {
+    description = "Trafic interne entre nodes"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
+  # Accès depuis le control plane EKS
+  ingress {
+    description = "Kubelet depuis le control plane"
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "sg-eks-nodes"
     Environment = "Production"
   }
 }
