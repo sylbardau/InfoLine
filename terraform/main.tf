@@ -6,10 +6,10 @@ module "vpc" {
   # ajout des variables VPC
   aws_region       = var.aws_region
   vpc_cidr         = var.vpc_cidr
-  cidr_subnet_public_1  = var.cidr_loadbalancer_a
-  cidr_subnet_public_2  = var.cidr_loadbalancer_b
-  cidr_subnet_private_1 = var.cidr_subnet_apps_a
-  cidr_subnet_private_2 = var.cidr_subnet_apps_a
+  cidr_subnet_loadbalancer_a  = var.cidr_loadbalancer_a
+  cidr_subnet_loadbalancer_b  = var.cidr_loadbalancer_b
+  cidr_subnet_apps_a = var.cidr_subnet_apps_a
+  cidr_subnet_apps_b = var.cidr_subnet_apps_b
   ssh_allowed_cidr      = var.ssh_allowed_cidr
 }
 

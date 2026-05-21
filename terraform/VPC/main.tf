@@ -23,7 +23,7 @@ resource "aws_internet_gateway" "igw" {
 # 	Sous-réseau Public
 resource "aws_subnet" "loadbalancer_a" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.cidr_subnet_loadbalancer-a
+  cidr_block              = var.cidr_subnet_loadbalancer_a
   availability_zone       = "${var.aws_region}a"
   map_public_ip_on_launch = true
 
@@ -37,7 +37,7 @@ resource "aws_subnet" "loadbalancer_a" {
 
 resource "aws_subnet" "loadbalancer_b" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.cidr_subnet_loadbalancer-b
+  cidr_block              = var.cidr_subnet_loadbalancer_b
   availability_zone       = "${var.aws_region}b"
   map_public_ip_on_launch = true
 
@@ -52,7 +52,7 @@ resource "aws_subnet" "loadbalancer_b" {
 #	Sous-réseau privée
 resource "aws_subnet" "apps_a" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.cidr_subnet_apps-a
+  cidr_block              = var.cidr_subnet_apps_a
   availability_zone       = "${var.aws_region}a" 
   map_public_ip_on_launch = false
 

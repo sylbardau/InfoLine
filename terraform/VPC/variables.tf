@@ -16,22 +16,22 @@ variable "cluster_name" {
   default     = "infoline-eks"
 }
 
-variable "cidr_subnet_loadbalancer-a" {
+variable "cidr_subnet_loadbalancer_a" {
   type        = string
   description = "CIDR subnet public AZ-a (Load Balancer, NAT Gateway)"
 }
 
-variable "cidr_subnet_loadbalancer-b" {
+variable "cidr_subnet_loadbalancer_b" {
   type        = string
   description = "CIDR subnet public AZ-b (haute disponibilité)"
 }
 
-variable "cidr_subnet_apps-a" {
+variable "cidr_subnet_apps_a" {
   type        = string
   description = "CIDR subnet privé AZ-a (nodes EKS, RDS)"
 }
 
-variable "cidr_subnet_apps-b" {
+variable "cidr_subnet_apps_b" {
   type        = string
   description = "CIDR subnet privé AZ-b (haute disponibilité)"
 }
