@@ -50,3 +50,33 @@ variable "ssh_allowed_cidr" {
   type        = string
   default     = "0.0.0.0/0"  # À restreindre en production !
 }
+
+variable "kubernetes_version" {
+  description = "Version de Kubernetes pour le cluster EKS"
+  type        = string
+  default     = "1.31"
+}
+
+variable "node_instance_type" {
+  description = "Type d'instance EC2 pour les nodes EKS"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "node_min_size" {
+  description = "Nombre minimum de nodes EKS"
+  type        = number
+  default     = 1
+}
+
+variable "node_desired_size" {
+  description = "Nombre de nodes EKS souhaité"
+  type        = number
+  default     = 2
+}
+
+variable "node_max_size" {
+  description = "Nombre maximum de nodes EKS"
+  type        = number
+  default     = 3
+}
