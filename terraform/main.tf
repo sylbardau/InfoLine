@@ -19,6 +19,7 @@ module "EKS" {
   # ajout des variables VPC
   cluster_name       = var.cluster_name
   kubernetes_version = var.kubernetes_version
+  instance_type = var.node_instance_type
     subnet_ids = [
     module.vpc.subnet_apps_a_id,
     module.vpc.subnet_apps_b_id
@@ -30,4 +31,10 @@ module "EKS" {
 }
 
 
-
+#module "lambda" {
+#  source = "./lambda"
+#
+  #ajout des variables lambda
+#  aws_region = var.aws_region
+#
+#}

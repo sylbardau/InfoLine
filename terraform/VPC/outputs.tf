@@ -9,3 +9,7 @@ output "subnet_apps_b_id" {
 output "sg_eks_nodes_id" {
   value = aws_security_group.sg_eks_nodes.id
 }
+
+output "vpc_id" {
+  value = aws_vpc.main.id
+}

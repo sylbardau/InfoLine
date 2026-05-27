@@ -48,7 +48,7 @@ variable "cidr_subnet_apps_b" {
 variable "ssh_allowed_cidr" {
   description = "IP autorisée pour SSH"
   type        = string
-  default     = "0.0.0.0/0"  # À restreindre en production !
+  default     = "78.124.153.8/32"  # À restreindre en production !
 }
 
 variable "kubernetes_version" {
