@@ -31,10 +31,14 @@ module "EKS" {
 }
 
 
-#module "lambda" {
-#  source = "./lambda"
-#
+module "lambda" {
+  source = "./lambda"
+
   #ajout des variables lambda
-#  aws_region = var.aws_region
-#
-#}
+  aws_region = var.aws_region
+vpc_id     = module.vpc.vpc_id
+  subnet_ids = [
+    module.vpc.subnet_apps_a_id,
+    module.vpc.subnet_apps_b_id
+  ]
+}
