@@ -12,6 +12,7 @@ resource "aws_iam_role" "lambda_role" {
   name = "${var.function_name}-role"
 
   assume_role_policy = jsonencode({
+    Version = "2012-10-17"
         Statement = [{
       Action    = "sts:AssumeRole"
       Effect    = "Allow"
@@ -99,7 +100,7 @@ resource "aws_lambda_function" "login" {
   environment {
     variables = {
       USERS_TABLE = aws_dynamodb_table.users.name
-      AWS_REGION  = var.aws_region
+      APP_REGION  = var.aws_region
     }
   }
 

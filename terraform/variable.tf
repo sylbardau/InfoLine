@@ -80,3 +80,27 @@ variable "node_max_size" {
   type        = number
   default     = 3
 }
+
+variable "db_name" {
+  description = "Nom de la base de données PostgreSQL"
+  type        = string
+  default     = "infolinedb"
+}
+
+variable "db_username" {
+  description = "Nom d'utilisateur PostgreSQL"
+  type        = string
+  default     = "infoline_admin"
+}
+
+variable "db_password" {
+  description = "Mot de passe PostgreSQL (à gérer via AWS Secrets Manager en prod)"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_instance_class" {
+  description = "Type d'instance RDS"
+  type        = string
+  default     = "db.t3.micro"
+}

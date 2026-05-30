@@ -58,7 +58,7 @@ def handle_login(event):
 def get_user(email):
     """Récupère un utilisateur depuis DynamoDB."""
     try:
-        dynamodb = boto3.resource("dynamodb", region_name=os.environ.get("AWS_REGION", "eu-west-3"))
+        dynamodb = boto3.resource("dynamodb", region_name=os.environ.get("APP_REGION", "eu-west-3"))
         table    = dynamodb.Table(os.environ.get("USERS_TABLE", "infoline-users"))
         result   = table.get_item(Key={"email": email})
         return result.get("Item")

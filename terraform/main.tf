@@ -13,7 +13,7 @@ module "vpc" {
   ssh_allowed_cidr      = var.ssh_allowed_cidr
 }
 
-module "EKS" {
+module "eks" {
  source = "./EKS"
 
   # ajout des variables VPC
@@ -41,4 +41,19 @@ vpc_id     = module.vpc.vpc_id
     module.vpc.subnet_apps_a_id,
     module.vpc.subnet_apps_b_id
   ]
+}
+
+module "rds" {
+  source = "./RDS"
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = [
+    module.vpc.subnet_apps_a_id,
+    module.vpc.subnet_apps_b_id,
+  ]
+  db_name           = var.db_name
+  db_username       = var.db_username
+  db_password       = var.db_password
+  db_instance_class = var.db_instance_class
+  vpc_cidr          = var.vpc_cidr
 }
