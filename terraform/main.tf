@@ -13,12 +13,13 @@ module "vpc" {
   ssh_allowed_cidr      = var.ssh_allowed_cidr
 }
 
-module "EKS" {
+module "eks" {
  source = "./EKS"
 
   # ajout des variables VPC
   cluster_name       = var.cluster_name
   kubernetes_version = var.kubernetes_version
+  instance_type = var.node_instance_type
     subnet_ids = [
     module.vpc.subnet_apps_a_id,
     module.vpc.subnet_apps_b_id
@@ -30,4 +31,29 @@ module "EKS" {
 }
 
 
+module "lambda" {
+  source = "./lambda"
 
+  #ajout des variables lambda
+  aws_region = var.aws_region
+vpc_id     = module.vpc.vpc_id
+  subnet_ids = [
+    module.vpc.subnet_apps_a_id,
+    module.vpc.subnet_apps_b_id
+  ]
+}
+
+module "rds" {
+  source = "./RDS"
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = [
+    module.vpc.subnet_apps_a_id,
+    module.vpc.subnet_apps_b_id,
+  ]
+  db_name           = var.db_name
+  db_username       = var.db_username
+  db_password       = var.db_password
+  db_instance_class = var.db_instance_class
+  vpc_cidr          = var.vpc_cidr
+}

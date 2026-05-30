@@ -48,7 +48,7 @@ variable "cidr_subnet_apps_b" {
 variable "ssh_allowed_cidr" {
   description = "IP autorisée pour SSH"
   type        = string
-  default     = "0.0.0.0/0"  # À restreindre en production !
+  default     = "78.124.153.8/32"  # À restreindre en production !
 }
 
 variable "kubernetes_version" {
@@ -79,4 +79,28 @@ variable "node_max_size" {
   description = "Nombre maximum de nodes EKS"
   type        = number
   default     = 3
+}
+
+variable "db_name" {
+  description = "Nom de la base de données PostgreSQL"
+  type        = string
+  default     = "infolinedb"
+}
+
+variable "db_username" {
+  description = "Nom d'utilisateur PostgreSQL"
+  type        = string
+  default     = "infoline_admin"
+}
+
+variable "db_password" {
+  description = "Mot de passe PostgreSQL (à gérer via AWS Secrets Manager en prod)"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_instance_class" {
+  description = "Type d'instance RDS"
+  type        = string
+  default     = "db.t3.micro"
 }
